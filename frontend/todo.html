@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="todo.css">
+    <title>ToDo App</title>
+</head>
+
+<body onload="renderTodos()">
+
+    <div class="form-container">
+
+        <h2>Neues ToDo erstellen</h2>
+
+        <!-- Echo Einbinden -->
+        <form onsubmit="addToDo(event)">
+
+            <!-- Titel -->
+            <label for="title">Titel *</label>
+            <input type="text" id="title" name="title" required>
+
+            <!-- Beschreibung des ToDo -->
+            <label for="description">Beschreibung</label>
+            <textarea id="description" name="description"></textarea>
+
+            <!-- Fälligkeitsdatum -->
+            <label for="date">Fälligkeitsdatum</label>
+            <input type="date" id="date" name="date">
+
+            <!-- Priorität -->
+            <label>Priorität *</label>
+            <div class="priority-group">
+                <label>
+                    <input type="radio" name="priority" value="low" required>
+                    Niedrig
+                </label>
+                <label>
+                    <input type="radio" name="priority" value="medium" required>
+                    Mittel
+                </label>
+                <label>
+                    <input type="radio" name="priority" value="high" required>
+                    Hoch
+                </label>
+            </div>
+
+            <!-- Kategorie -->
+            <label for="category">Kategorie</label>
+            <select name="category" id="category">
+                <option value="school">Schule</option>
+                <option value="work">Arbeit</option>
+                <option value="private">Privat</option>
+            </select>
+
+            <!-- Buttons -->
+            <div class="buttons">
+                <button type="submit" class="save">Senden</button>
+                <button type="reset" class="cancel">Zurücksetzen</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="todo-list"></div>
+    <script src="todo.js"></script>
+</body>
+
+</html>
