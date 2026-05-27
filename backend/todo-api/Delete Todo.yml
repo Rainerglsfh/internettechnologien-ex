@@ -1,0 +1,16 @@
+info:
+  name: Delete Todo
+  type: http
+  seq: 1
+
+http:
+  method: DELETE
+  url: http://localhost:3000/api/todos/DEINE_ID
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​

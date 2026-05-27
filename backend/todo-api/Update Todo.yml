@@ -1,0 +1,23 @@
+info:
+  name: Update Todo
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: http://localhost:3000/api/todos/_id
+  body:
+    type: json
+    data: |-
+      {
+        "title": "GEÄNDERT in Bruno",
+        "status": 2
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+​

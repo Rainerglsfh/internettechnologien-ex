@@ -1,12 +1,10 @@
 import express from 'express';
+import apiRouter from './api.js';
 
-/** Zentrales Objekt für unsere Express-Applikation */
 const app = express();
 
-/**
- * Liste aller ToDos. 
- * Wird später durch Datenbank ersetzt!
- */
+app.use(express.json());
+
 let TODOS = [
     {
         "_id": 1671056616571,
@@ -19,50 +17,58 @@ let TODOS = [
         "title": "Für die Klausur Webentwicklung lernen",
         "due": "2023-01-14T00:00:00.000Z",
         "status": 2
-    },
-    {
-        "_id": 1671087245764,
-        "title": "Einen Kuchen backen",
-        "due": "2023-01-14T00:00:00.000Z",
-        "status": 1
     }
 ];
 
-app.use(express.json());
+/* =========================
+   API ROUTES (HIER BLEIBEN SIE!)
+   ========================= */
 
-// Your code here
 app.get('/api/todos', (req, res) => {
     res.json(TODOS);
 });
 
 app.post('/api/todos', (req, res) => {
-    const newTodo = req.body;
-    newTodo._id = Date.now();
+    const newTodo = {
+        ...req.body,
+        _id: Date.now()
+    };
+
     TODOS.push(newTodo);
     res.status(201).json(newTodo);
-})
+});
 
-app.get('/api/todos/:id', (req, res) => {
+app.put('/api/todos/:id', (req, res) => {
     const id = parseInt(req.params.id);
-    const todo = TODOS.find(todo => todo._id === id);
-    if (todo) {
-        res.json(todo);
-    } else {
-        res.status(404).send();
-    }
-})
+    const index = TODOS.findIndex(t => t._id === id);
+
+    if (index === -1) return res.status(404).send();
+
+    TODOS[index] = {
+        ...TODOS[index],
+        ...req.body,
+        _id: id
+    };
+
+    res.json(TODOS[index]);
+});
 
 app.delete('/api/todos/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const index = TODOS.findIndex(t => t._id === id);
 
-    if (index === -1) {
-        return res.status(404).send();
-    }
+    if (index === -1) return res.status(404).send();
 
     TODOS.splice(index, 1);
+
     res.status(204).send();
 });
+
+/* =========================
+   API ERWEITERUNG (api.js)
+   ========================= */
+
+app.use('/api', apiRouter);
 
 app.listen(3000, () => {
     console.log("Server läuft auf http://localhost:3000");
