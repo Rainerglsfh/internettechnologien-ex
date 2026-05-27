@@ -31,18 +31,18 @@ let TODOS = [
 app.use(express.json());
 
 // Your code here
-app.get('/todos', (req, res) => {
+app.get('/api/todos', (req, res) => {
     res.json(TODOS);
 });
 
-app.post('/todos', (req, res) => {
+app.post('/api/todos', (req, res) => {
     const newTodo = req.body;
     newTodo._id = Date.now();
     TODOS.push(newTodo);
     res.status(201).json(newTodo);
 })
 
-app.get('/todos/:id', (req, res) => {
+app.get('/api/todos/:id', (req, res) => {
     const id = parseInt(req.params.id);
     const todo = TODOS.find(todo => todo._id === id);
     if (todo) {
@@ -52,4 +52,18 @@ app.get('/todos/:id', (req, res) => {
     }
 })
 
-app.listen(3000);
+app.delete('/api/todos/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = TODOS.findIndex(t => t._id === id);
+
+    if (index === -1) {
+        return res.status(404).send();
+    }
+
+    TODOS.splice(index, 1);
+    res.status(204).send();
+});
+
+app.listen(3000, () => {
+    console.log("Server läuft auf http://localhost:3000");
+});
