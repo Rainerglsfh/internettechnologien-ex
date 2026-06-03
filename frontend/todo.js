@@ -1,9 +1,23 @@
-const TODOS = [
-    { id: 1715670949844, title: 'Aufgabe 4 abgeben', due: '2021-05-21T10:00:00.000Z', status: 'done' },
-    { id: 1715670971040, title: 'Aufgabe 6 abgeben', due: '2021-06-08T10:00:00.000Z', status: 'doing' },
-    { id: 1715670972068, title: 'ToDo-Anwendung fertig stellen', due: '2021-06-22T10:00:00.000Z', status: 'open' },
-    { id: 1715670971070, title: 'Für die Klausur lernen', due: '2021-07-01T11:00:00.000Z', status: 'open' }
-];
+let TODOS = [];
+
+const statusMap = ["open", "doing", "done"];
+
+window.onload = function () {
+    fetch("/api/todos") 
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Fehler beim Laden der ToDos");
+            }
+            return response.json();
+        })
+        .then(data => {
+            TODOS = data;        // Backend-Daten speichern
+            renderTodos();       // UI aktualisieren
+        })
+        .catch(error => {
+            console.error("Fetch Fehler:", error);
+        });
+};
 
 function renderTodos() {
     const container = document.getElementById("todo-list");
@@ -12,18 +26,19 @@ function renderTodos() {
     TODOS.forEach(todo => {
 
         const html = `
-            <div class="todo-item" data-id="${todo.id}">
+            <div class="todo-item" data-id="${todo._id}">
 
                 <h3>${todo.title}</h3>
                 <p>Fällig: ${todo.due}</p>
-                <p>Status: ${todo.status}</p>
+                <p>Status: ${statusMap[todo.status]}</p>
+                <p>Priorität: ${todo.priority}</p>
 
-                <!-- Icons -->
-                <button onclick="deleteTodo(${todo.id})">🗑️ Löschen</button>
-                <button onclick="editTodo(${todo.id})">✏️ Bearbeiten</button>
+                <button onclick="deleteTodo(${todo._id})">🗑️ Löschen</button>
+                <button onclick="editTodo(${todo._id})">✏️ Bearbeiten</button>
 
             </div>
         `;
+
         container.insertAdjacentHTML("beforeend", html);
     });
 }
@@ -33,36 +48,83 @@ function addTodo(event) {
 
     const title = document.getElementById("title").value;
     const date = document.getElementById("date").value;
+    const priorityElement = document.querySelector('input[name="priority"]:checked');
+    const priority = priorityElement ? priorityElement.value : "low";
     const newTodo = {
-        id: Date.now(),
         title: title,
-        due: date ? new Date(date).toLocaleDateString() : "",
-        status: "open"
+        due: date ? new Date(date).toISOString() : "",
+        status: 0,
+        priority: priority
     };
-    TODOS.push(newTodo);
-    renderTodos();
-    event.target.reset();
+
+    fetch("/api/todos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newTodo)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("POST fehlgeschlagen");
+        return res.json();
+    })
+    .then(createdTodo => {
+        TODOS.push(createdTodo);
+        renderTodos();
+        event.target.reset();
+    })
+    .catch(err => console.error(err));
 }
 
 function deleteTodo(id) {
-    const index = TODOS.findIndex(todo => todo.id === id);
-    if (index !== -1) {
-        TODOS.splice(index, 1);
-    }
-    renderTodos();
+    fetch(`/api/todos/${id}`, {
+        method: "DELETE"
+    })
+    .then(res => {
+        if (!res.ok && res.status !== 204) {
+            throw new Error("DELETE fehlgeschlagen");
+        }
+
+        TODOS = TODOS.filter(todo => todo._id !== id);
+        renderTodos();
+    })
+    .catch(err => console.error(err));
 }
 
 function editTodo(id) {
-    const todo = TODOS.find(t => t.id === id);
+    const todo = TODOS.find(t => t._id === id);
     if (!todo) return;
+
     const newTitle = prompt("Neuer Titel:", todo.title);
-    const newStatus = prompt("Neuer Status (open/doing/done):", todo.status);
-    if (newTitle !== null && newTitle.trim() !== "") {
-        todo.title = newTitle;
-    }
-    const allowed = ["open", "doing", "done"];
-    if (allowed.includes(newStatus)) {
-        todo.status = newStatus;
-    }
-    renderTodos();
+    const newStatus = prompt("Neuer Status (0=open, 1=doing, 2=done):", todo.status);
+
+    const updatedTodo = {
+        ...todo,
+        title: newTitle ?? todo.title,
+        status: ["0", "1", "2"].includes(newStatus)
+            ? parseInt(newStatus)
+            : todo.status
+    };
+
+    fetch(`/api/todos/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(updatedTodo)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("PUT fehlgeschlagen");
+        return res.json();
+    })
+    .then(updatedFromServer => {
+
+        const index = TODOS.findIndex(t => t._id === id);
+        if (index !== -1) {
+            TODOS[index] = updatedFromServer;
+        }
+
+        renderTodos();
+    })
+    .catch(err => console.error(err));
 }
