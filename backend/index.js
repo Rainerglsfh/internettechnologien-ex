@@ -7,18 +7,6 @@ const app = express();
 app.use(express.static('../frontend'));
 app.use(express.json());
 
-
-
-/* =========================
-   API ROUTES (HIER BLEIBEN SIE!)
-   ========================= */
-
-
-
-/* =========================
-   API ERWEITERUNG (api.js)
-   ========================= */
-
 app.use('/api', apiRouter);
 
 app.listen(3000, () => {
