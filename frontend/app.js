@@ -33,8 +33,8 @@ function renderTodos() {
                 <p>Status: ${statusMap[todo.status]}</p>
                 <p>Priorität: ${todo.priority}</p>
 
-                <button onclick="deleteTodo(${todo._id})">🗑️ Löschen</button>
-                <button onclick="editTodo(${todo._id})">✏️ Bearbeiten</button>
+                <button onclick="deleteTodo('${todo._id}')">🗑️ Löschen</button>
+                <button onclick="editTodo('${todo._id}')">✏️ Bearbeiten</button>
 
             </div>
         `;

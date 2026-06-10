@@ -1,67 +1,44 @@
 import express from 'express';
+import DB from './db.js';
+
 const router = express.Router();
-
-/**
- * Beispiel: zusätzliche Route (Erweiterung der Aufgabe)
- * z. B. Status-Statistik oder Filter
- */
-
-let TODOS = [
-    {
-        "_id": 1671056616571,
-        "title": "Übung 4 machen",
-        "due": "2022-11-12T00:00:00.000Z",
-        "status": 0
-    },
-    {
-        "_id": 1671087245763,
-        "title": "Für die Klausur Webentwicklung lernen",
-        "due": "2023-01-14T00:00:00.000Z",
-        "status": 2
-    }
-];
+const db = new DB();
+const dbReady = db.connect();
 
 router.get('/', (req, res) => {
     res.json({ message: 'Todo API läuft' });
 });
 
-router.get('/todos', (req, res) => {
-    res.json(TODOS);
+router.get('/todos', async (req, res) => {
+    await dbReady;
+    const todos = await db.queryAll();
+    res.json(todos);
 });
 
-router.post('/todos', (req, res) => {
-    const newTodo = {
-        ...req.body,
-        _id: Date.now()
-    };
+router.get('/todos/:id', async (req, res) => {
+    await dbReady;
+    const todo = await db.queryById(req.params.id);
+    if (!todo) return res.status(404).send();
+    res.json(todo);
+});
 
-    TODOS.push(newTodo);
+router.post('/todos', async (req, res) => {
+    await dbReady;
+    const newTodo = await db.insert(req.body);
     res.status(201).json(newTodo);
 });
 
-router.put('/todos/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    const index = TODOS.findIndex(t => t._id === id);
-
-    if (index === -1) return res.status(404).send();
-
-    TODOS[index] = {
-        ...TODOS[index],
-        ...req.body,
-        _id: id
-    };
-
-    res.json(TODOS[index]);
+router.put('/todos/:id', async (req, res) => {
+    await dbReady;
+    const updatedTodo = await db.update(req.params.id, req.body);
+    if (!updatedTodo) return res.status(404).send();
+    res.json(updatedTodo);
 });
 
-router.delete('/todos/:id', (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    const index = TODOS.findIndex(t => t._id === id);
-
-    if (index === -1) return res.status(404).send();
-
-    TODOS.splice(index, 1);
-
+router.delete('/todos/:id', async (req, res) => {
+    await dbReady;
+    const result = await db.delete(req.params.id);
+    if (result.deletedCount === 0) return res.status(404).send();
     res.status(204).send();
 });
 
