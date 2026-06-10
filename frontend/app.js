@@ -118,19 +118,19 @@ function editTodo(id) {
     })
     .then(res => {
         if (!res.ok) throw new Error("PUT fehlgeschlagen");
-        return res.json();
+        return res.json().catch(() => {
+            // Wenn kein JSON in der Response ist, gibt es trotzdem keinen Fehler
+            return updatedTodo;
+        });
     })
     .then(updatedFromServer => {
-
         const index = TODOS.findIndex(t => t._id === id);
         if (index !== -1) {
             TODOS[index] = updatedFromServer;
         }
-
         renderTodos();
     })
     .catch(err => {
         console.error("Fehler beim Update:", err);
-        alert("Fehler beim Aktualisieren des Todos");
     });
 }

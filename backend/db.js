@@ -34,10 +34,11 @@ export default class DB {
             { $set: updateData },
             { returnDocument: 'after' }
         ).then(result => {
-            if (!result.value) {
+            // MongoDB Node.js Driver gibt das Dokument direkt zurück
+            if (!result) {
                 return null;
             }
-            return result.value;
+            return result;
         });
     }
 
