@@ -96,13 +96,16 @@ function editTodo(id) {
     if (!todo) return;
 
     const newTitle = prompt("Neuer Titel:", todo.title);
-    const newStatus = prompt("Neuer Status (0=open, 1=doing, 2=done):", todo.status);
+    if (newTitle === null) return;  // User hat Cancel geklickt
+
+    const newStatusInput = prompt("Neuer Status (0=open, 1=doing, 2=done):", todo.status);
+    if (newStatusInput === null) return;  // User hat Cancel geklickt bei Status
 
     const updatedTodo = {
         ...todo,
-        title: newTitle ?? todo.title,
-        status: ["0", "1", "2"].includes(newStatus)
-            ? parseInt(newStatus)
+        title: newTitle || todo.title,
+        status: ["0", "1", "2"].includes(newStatusInput)
+            ? parseInt(newStatusInput)
             : todo.status
     };
 
@@ -126,5 +129,8 @@ function editTodo(id) {
 
         renderTodos();
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error("Fehler beim Update:", err);
+        alert("Fehler beim Aktualisieren des Todos");
+    });
 }

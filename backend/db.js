@@ -26,11 +26,19 @@ export default class DB {
 
     update(id, order) {
         const _id = typeof id === 'string' ? new ObjectId(id) : id;
+        // Entferne _id aus dem Update-Objekt, da es unveränderlich ist
+        const updateData = { ...order };
+        delete updateData._id;
         return collection.findOneAndUpdate(
             { _id },
-            { $set: order },
+            { $set: updateData },
             { returnDocument: 'after' }
-        ).then(result => result.value);
+        ).then(result => {
+            if (!result.value) {
+                return null;
+            }
+            return result.value;
+        });
     }
 
     delete(id) {
