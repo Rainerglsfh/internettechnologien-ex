@@ -12,13 +12,23 @@ body {
     box-sizing: border-box;
 }
 
-.form-container {
+.form-container,
+.todo-panel {
     background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-container {
     padding: 30px;
     width: 450px;
     max-width: 100%;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.todo-panel {
+    width: 500px;
+    max-width: 100%;
+    padding: 15px;
 }
 
 h2 {
@@ -68,7 +78,6 @@ button {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    flex: 1;
 }
 
 .save {
@@ -82,11 +91,56 @@ button {
     color: white;
 }
 
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.filter-btn {
+    background: #eef2f7;
+    color: #333;
+    flex: 1;
+}
+
+.filter-btn.active {
+    background: #3498db;
+    color: white;
+}
+
+#todo-list {
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+.todo-category-section {
+    margin-bottom: 16px;
+}
+
+.todo-category-section h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.todo-category-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .todo-item {
     background: #f9f9f9;
     padding: 12px;
-    margin-bottom: 10px;
     border-radius: 8px;
+}
+
+.todo-item h3 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.todo-item p {
+    margin: 5px 0;
 }
 
 .todo-item button {
@@ -95,15 +149,10 @@ button {
     cursor: pointer;
 }
 
-#todo-list {
-    width: 450px;
-    max-width: 100%;
-    max-height: 75vh;
-    overflow-y: auto;
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+.empty-state {
+    text-align: center;
+    color: #666;
+    padding: 20px 0;
 }
 
 @media (max-width: 940px) {
@@ -113,7 +162,8 @@ button {
     }
 
     #todo-list,
-    .form-container {
+    .form-container,
+    .todo-panel {
         width: 100%;
         max-width: 450px;
     }
