@@ -11,8 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^4.22.2",
-    "mongodb": "^7.3.0"
+    "mongodb": "^7.3.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1"
   }
 }
