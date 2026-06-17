@@ -8,17 +8,63 @@ const categoryLabels = {
     private: "Privat"
 };
 const categoryOrder = ["school", "work", "private"];
+const LOGIN_URL = "https://keycloak.gawron.cloud/realms/webentwicklung/protocol/openid-connect/auth";
+
+function startLogin() {
+    let state = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith("state="))
+        ?.split("=")[1];
+
+    if (!state) {
+        state = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+        document.cookie = `state=${state}; path=/; max-age=300`;
+    }
+
+    const callbackUrl = new URL("/oauth_callback", window.location.origin).toString();
+    document.cookie = `redirect_uri=${encodeURIComponent(callbackUrl)}; path=/; max-age=300`;
+
+    const params = new URLSearchParams();
+    params.append("response_type", "code");
+    params.append("redirect_uri", callbackUrl);
+    params.append("client_id", "todo-backend");
+    params.append("scope", "openid");
+    params.append("state", state);
+    params.append("prompt", "login");
+
+    window.location.assign(LOGIN_URL + "?" + params.toString());
+}
+
+function checkLogin(response) {
+    if (response.status === 401) {
+        startLogin();
+        throw new Error("Need to log in");
+    }
+
+    return response;
+}
+
+function apiFetch(url, options = {}) {
+    return fetch(url, options)
+        .then(response => checkLogin(response))
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+            return response;
+        });
+}
 
 window.onload = function () {
     setupFilterTabs();
 
-    fetch("/api/todos")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Fehler beim Laden der ToDos");
-            }
-            return response.json();
-        })
+    const loginButton = document.getElementById("login-button");
+    if (loginButton) {
+        loginButton.addEventListener("click", startLogin);
+    }
+
+    apiFetch("/api/todos")
+        .then(response => response.json())
         .then(data => {
             TODOS = data;
             renderTodos();
@@ -131,17 +177,14 @@ function addTodo(event) {
         category
     };
 
-    fetch("/api/todos", {
+    apiFetch("/api/todos", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(newTodo)
     })
-        .then(res => {
-            if (!res.ok) throw new Error("POST fehlgeschlagen");
-            return res.json();
-        })
+        .then(res => res.json())
         .then(createdTodo => {
             TODOS.push(createdTodo);
             renderTodos();
@@ -151,14 +194,10 @@ function addTodo(event) {
 }
 
 function deleteTodo(id) {
-    fetch(`/api/todos/${id}`, {
+    apiFetch(`/api/todos/${id}`, {
         method: "DELETE"
     })
-        .then(res => {
-            if (!res.ok && res.status !== 204) {
-                throw new Error("DELETE fehlgeschlagen");
-            }
-
+        .then(() => {
             TODOS = TODOS.filter(todo => todo._id !== id);
             renderTodos();
         })
@@ -183,19 +222,14 @@ function editTodo(id) {
             : todo.status
     };
 
-    fetch(`/api/todos/${id}`, {
+    apiFetch(`/api/todos/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(updatedTodo)
     })
-        .then(res => {
-            if (!res.ok) throw new Error("PUT fehlgeschlagen");
-            return res.json().catch(() => {
-                return updatedTodo;
-            });
-        })
+        .then(res => res.json().catch(() => updatedTodo))
         .then(updatedFromServer => {
             const index = TODOS.findIndex(t => t._id === id);
             if (index !== -1) {
